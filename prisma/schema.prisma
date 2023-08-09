@@ -1,0 +1,180 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model provider_details{
+  id        Int  @id @default(autoincrement())
+  name      String
+  email     String? @unique
+  mobile    String    @unique
+  type      String?
+  vehicle   Json?
+  documents Json?
+  gst       String?
+  password  String?
+  // photo     Json? 
+  // engine_no String?
+  // chassis_no String?
+  // owner_name String?
+  // model_no String?
+
+  provider_feed provider_feedback[]
+  // provid_id    order_details[]
+  provider_ids  provider_response[]
+  providr_id  assignment[]
+  provdr_id vehicle[]
+  provider_feedback Int?
+}
+
+model vehicle{
+  id       Int  @id  @default(autoincrement())
+  veh_num  String?
+  veh_brand String?
+  veh_model String?
+  weight    Int?
+  volume    Int?
+  covered   String?
+  refrigerated String?
+  engine_num String?
+  chassis_num String?
+  ownername String?
+  year_of_make String?
+  provider_id Int
+  photo Json?
+  rc_book Json?
+  provder_id provider_details @relation(fields: [provider_id],references: [id])
+}
+
+model provider_feedback{
+  id       Int @id  @default(autoincrement())
+  provider_id  Int 
+  provider provider_details @relation(fields: [provider_id],references: [id])
+  param1   Int?
+  param2   Int?
+  param3   Int?
+  param4   Int?
+  remarks  String?
+  average  Int? 
+}
+model vehicle_type{
+  id  Int @id @default(autoincrement())
+  veh_type String?
+  wght Int?
+  vol Int?
+  // vehcle_id  order_details[]
+}
+
+model order_details{
+  id    Int @id @default(autoincrement())
+  from  String?
+  to    String?
+  order_date DateTime?
+  products  Json?
+  quoted_price Int?
+  bandwidth Int?
+  actual_price Int?
+  // provd_id  Int
+  // providerid provider_details @relation(fields: [provd_id],references: [id])
+  type String?
+  // veh_type_id Int 
+  // veh_id vehicle_type @relation(fields: [veh_type_id],references: [id])
+  status String?
+  custmr_id Int
+  cstmer_id customer_details @relation(fields: [custmr_id],references: [id])
+  order_detail provider_response[]
+  ordr_id  assignment[]
+  odr_id payment[]
+}
+model provider_response{
+  id Int @id @default(autoincrement())
+  order_id Int
+  orderdetail_id order_details @relation(fields: [order_id],references: [id])
+  price Int
+  provider_id Int
+  providr_id provider_details @relation(fields: [provider_id],references: [id])
+  bid_ids assignment[]
+ 
+}
+
+model customer_details{
+  id Int @id @default(autoincrement())
+  name String?
+  email String? @unique
+  mobile String? @unique
+  address String?
+  password String?
+  type   String?
+  gst   String?
+  cus_id customer_feedback[]
+  custm_id address_book[]
+  customer_ids order_details[]
+  feedback_average Int?
+}
+
+model customer_feedback{
+  id Int @id @default(autoincrement())
+  customer_id Int
+  cust_id customer_details @relation(fields: [customer_id],references: [id])
+  param1 Int?
+  param2 Int?
+  param3 Int?
+  param4 Int?
+  remark String?
+  average Int?
+
+}
+
+model address_book{
+  id Int @id @default(autoincrement())
+  custom_id Int
+  customers_id customer_details @relation(fields: [custom_id],references: [id])
+  address Json?
+  address_label String?
+  label String?
+  logitude String?
+  latitude String?
+  contact String?
+  category String?
+  district String?
+  locality String?
+  
+}
+
+model materials{
+  id Int @id @default(autoincrement())
+  product String?
+  density  String?
+  material_type String?
+}
+model assignment{
+  id Int @id @default(autoincrement())
+  order_id Int 
+  odr_id order_details @relation(fields: [order_id],references: [id])
+  provider_id Int
+  prov_id provider_details @relation(fields: [provider_id],references: [id])
+  bid_id Int
+  bid provider_response @relation(fields: [bid_id],references: [id])
+  status Boolean?
+  order_status String?
+}
+model payment{
+  id Int @id @default(autoincrement())
+  order_id Int
+  ordr_id  order_details @relation(fields: [order_id],references: [id])
+  payment_reference String?
+  date DateTime?
+  amount Int?
+}
+
+
+
+
