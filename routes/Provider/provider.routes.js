@@ -1,6 +1,6 @@
 const express = require('express')
 const providerRouter = express.Router()
-const {providerRegistration,provider_login,customers_details,single_order_detail,amount_added,driver_documentation,provider_feedback,changeing_password,complete_trip,vehicle_details,adding_veh_details} =require('./provider.controller')
+const {providerRegistration,provider_login,customers_details,single_order_detail,amount_added,driver_documentation,provider_feedback,changeing_password,complete_trip,vehicle_details,adding_veh_details,adding_status} =require('./provider.controller')
 
 
 
@@ -8,7 +8,7 @@ const {providerRegistration,provider_login,customers_details,single_order_detail
 
 
 providerRouter.post('/register',providerRegistration)
-providerRouter.get('/login',provider_login)
+providerRouter.post('/login',provider_login)
 providerRouter.get('/customer_details',customers_details)
 providerRouter.post('/single_order',single_order_detail)
 providerRouter.post('/adding_amt',amount_added)
@@ -20,6 +20,7 @@ providerRouter.put('/changepassword',changeing_password)
 providerRouter.post('/trips',complete_trip)
 providerRouter.post('/vehicle_details',vehicle_details)
 providerRouter.get('/adding_details',adding_veh_details)
+providerRouter.post('/status',adding_status)
 
 
 

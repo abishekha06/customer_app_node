@@ -5,6 +5,7 @@ const { restart } = require("nodemon");
 const nodemailer = require('nodemailer')
 const path = require('path')
 const hbs = require('nodemailer-express-handlebars');
+// const activeuserid = new set()
 
 
 
@@ -117,156 +118,180 @@ const registration = async (req, res) => {
     }
   };
   
-// const logindata = async(req,res)=>{
-//     const{email,password,mobile}=req.body;
-//     if(!email||!password){
-//         res.status(401).json({
-//             error:true,
-//             status:false,
-//             message:"Email and password required"
-//         })
-//     }
-//     else if(!mobile||!password){
-//         res.status(401).json({
-//             error:true,
-//             status:false,
-//             message:"mobile and password required"
-//         })
-//     }else{
-//         try{
-//             const user = await prisma.customer_details.findFirst({
-//                 where:
-//                 {
-//                 email:email,
-//                 mobile : mobile
-//                 },
-//             })
-//             console.log(user)
-//             if(!user){
-//                 res.status(401).json({
-//                     error:true,
-//                     status:false,
-//                     message:"user not found"
-//                 })
-//             }else{
-//                 const hashedpassword = user.password;
-//                 console.log(user.password);
-//             bcrypt.compare(password,hashedpassword,function(err,result){
-//                 if(err){
-//                     res.send("password hashing error")
-//                 }
-//              console.log("result==",result)
-//              if(!result){
-//                 res.status(401).json({
-//                     error:true,
-//                     status:false,
-//                     message:"recheck your password"
-//                 })
 
-//              }else{
-//                 res.status(200).json({
-//                     error:false,
-//                     status:true,
-//                     message:"successfully logined"
-//                 })
-//              }
-//             })
+// login 
+// const logindata = async (req, res) => {
+//     const { email, password, mobile } = req.body;
+
+//     if ((!email && !mobile) || !password) {
+//         res.status(401).json({
+//             error: true,
+//             status: false,
+//             message: "Email/Mobile and password are required"
+//         });
+//     } else {
+//         try {
+//             let user;
+
+//             if (email !== null && mobile !== null) {
+              
+//                 user = await prisma.customer_details.findFirst({
+//                     where: {
+//                         email: email,
+//                         mobile: mobile
+//                     },
+//                 });
+//             } else if (email !== null) {
+                
+//                 user = await prisma.customer_details.findFirst({
+//                     where: {
+//                         email: email
+//                     },
+//                 });
+//             } else {
+//                 // Check only for mobile if email is null
+//                 user = await prisma.customer_details.findFirst({
+//                     where: {
+//                         mobile: mobile
+//                     },
+//                 });
 //             }
 
-//         }catch(err){
-//             console.error("error",err)
+//             console.log(user);
+
+//             if (!user) {
+//                 res.status(401).json({
+//                     error: true,
+//                     status: false,
+//                     message: "User not found"
+//                 });
+//             } else {
+//                 const hashedPassword = user.password;
+
+//                 console.log(user.password);
+
+//                 bcrypt.compare(password, hashedPassword, function (err, result) {
+//                     if (err) {
+//                         res.status(500).json({
+//                             error: true,
+//                             status: false,
+//                             message: "Password hashing error"
+//                         });
+//                     } else {
+//                         if (!result) {
+//                             res.status(401).json({
+//                                 error: true,
+//                                 status: false,
+//                                 message: "Invalid password"
+//                             });
+//                         } else {
+//                             res.status(200).json({
+//                                 error: false,
+//                                 status: true,
+//                                 message: "Successfully logged in",
+//                                 data:user
+//                             });
+//                         }
+//                     }
+//                 });
+//             }
+//         } catch (err) {
+//             console.error("Error:", err);
+//             res.status(500).json({
+//                 error: true,
+//                 status: false,
+//                 message: "Internal server error"
+//             });
 //         }
-    
 //     }
-   
-// }
+// };
 
 const logindata = async (req, res) => {
-    const { email, password, mobile } = req.body;
+  const { userid, password } = req.body;
 
-    if ((!email && !mobile) || !password) {
-        res.status(401).json({
-            error: true,
-            status: false,
-            message: "Email/Mobile and password are required"
-        });
-    } else {
-        try {
-            let user;
+  if (!userid || !password) {
+      res.status(401).json({
+          error: true,
+          status: false,
+          message: "Identifier and password are required"
+      });
+  } else {
+      try {
+          let user;
+          let identifierType; 
 
-            if (email !== null && mobile !== null) {
-                // Check both email and mobile if provided
-                user = await prisma.customer_details.findFirst({
-                    where: {
-                        email: email,
-                        mobile: mobile
-                    },
-                });
-            } else if (email !== null) {
-                // Check only for email if mobile is null
-                user = await prisma.customer_details.findFirst({
-                    where: {
-                        email: email
-                    },
-                });
-            } else {
-                // Check only for mobile if email is null
-                user = await prisma.customer_details.findFirst({
-                    where: {
-                        mobile: mobile
-                    },
-                });
-            }
+          
+          const isEmailFormat = /^[^\s@]+@gmail\.com$/.test(userid);
 
-            console.log(user);
+          if (isEmailFormat) {
+              identifierType = 'email';
+          } else {
+              identifierType = 'mobile';
+          }
 
-            if (!user) {
-                res.status(401).json({
-                    error: true,
-                    status: false,
-                    message: "User not found"
-                });
-            } else {
-                const hashedPassword = user.password;
+          if (identifierType === 'email') {
+              user = await prisma.customer_details.findFirst({
+                  where: {
+                      email: userid
+                  },
+              });
+          } else {
+              user = await prisma.customer_details.findFirst({
+                  where: {
+                      mobile: userid
+                  },
+              });
+          }
 
-                console.log(user.password);
+          if (!user) {
+              res.status(401).json({
+                  error: true,
+                  status: false,
+                  message: "User not found"
+              });
+          } else {
+              const hashedPassword = user.password;
 
-                bcrypt.compare(password, hashedPassword, function (err, result) {
-                    if (err) {
-                        res.status(500).json({
-                            error: true,
-                            status: false,
-                            message: "Password hashing error"
-                        });
-                    } else {
-                        if (!result) {
-                            res.status(401).json({
-                                error: true,
-                                status: false,
-                                message: "Invalid password"
-                            });
-                        } else {
-                            res.status(200).json({
-                                error: false,
-                                status: true,
-                                message: "Successfully logged in",
-                                data:user
-                            });
-                        }
-                    }
-                });
-            }
-        } catch (err) {
-            console.error("Error:", err);
-            res.status(500).json({
-                error: true,
-                status: false,
-                message: "Internal server error"
-            });
-        }
-    }
+              bcrypt.compare(password, hashedPassword, function (err, result) {
+                  if (err) {
+                      res.status(500).json({
+                          error: true,
+                          status: false,
+                          message: "Password hashing error"
+                      });
+                  } else {
+                      if (!result) {
+                          res.status(401).json({
+                              error: true,
+                              status: false,
+                              message: "Invalid password"
+                          });
+                      } else {
+                          res.status(200).json({
+                              error: false,
+                              status: true,
+                              message: "Successfully logged in",
+                              data: user
+                          });
+                      }
+                  }
+              });
+          }
+      } catch (err) {
+          console.error("Error:", err);
+          res.status(500).json({
+              error: true,
+              status: false,
+              message: "Internal server error"
+          });
+      }
+  }
 };
 
+
+
+
+//address book
 const customer_addressbook = async (req, res) => {
     console.log("reqq",req.body);
     const custom_id = parseInt(req.body.custom_id);
@@ -321,9 +346,9 @@ const customer_addressbook = async (req, res) => {
 
 
 
-
+//customer_feedback
 const customer_feedback = async (req, res) => {
-  const customer_id =req.body.customer_id;
+  const customer_id =parseInt(req.body.customer_id);
   const param1 = req.body.param1;
   const param2 = req.body.param2;
   const param3 = req.body.param3;
@@ -331,7 +356,7 @@ const customer_feedback = async (req, res) => {
   const remark = req.body.remark;
 
   try {
-      const feedback = await prisma.customer_details.findUnique({
+      const feedback = await prisma.customer_details.findMany({
           where: {
               id: customer_id,
           },
@@ -408,7 +433,7 @@ const customer_feedback = async (req, res) => {
       });
   }
 };
-
+//product material list
 const product_material = async (req, res) => {
     try {
       const materials_type = [
@@ -440,7 +465,7 @@ const product_material = async (req, res) => {
       res.status(500).json({ error: "An error occurred while fetching materials" });
     }
   };
-
+// product order
   const order_list =async(req,res)=>{
     try{
         const{from,to,products,quoted_price,bandwidth,actual_price,custmr_id,type,status}=req.body;
@@ -483,12 +508,12 @@ const product_material = async (req, res) => {
         console.error("error==>",err)
     }
   }
-
+//single customer details
   const customerdetails =async(req,res)=>{
     try{
         const{custmr_id}=req.body;
      
-        const cus_order = await prisma.customer_details.findUnique({
+        const cus_order = await prisma.customer_details.findMany({
             where:{
                 id:custmr_id
             }
@@ -537,7 +562,8 @@ const product_material = async (req, res) => {
 
 
 const select_provider = async (req, res) => {
-    const { order_id, provider_id, bid_id, successFlag } = req.body;
+  console.log("request=====",req.body)
+    const { order_id, provider_id, bid_id, successFlag ,status } = req.body;
     try {
       if (successFlag) {
          await prisma.assignment.create({
@@ -548,17 +574,28 @@ const select_provider = async (req, res) => {
             status:successFlag
           },
         });
-  } else {
-        res.status(200).json({
+  } 
+  else {
+      res.status(400).json ({
           error: true,
           success: false,
           message: "Driver not selected due to unsuccessful flag",
+         
         });
       }
       const selected_driver = await prisma.order_details.findUnique({
         where:{
           id:order_id
         }
+      })
+      await prisma.order_details.update({
+        where:{
+          id:order_id
+        },
+        data:{
+          status:status
+        }
+
       })
       
       res.status(200).json({
@@ -567,7 +604,8 @@ const select_provider = async (req, res) => {
         message:'customer details found',
         data: selected_driver
       })
-    } catch (err) {
+      
+     } catch (err) {
       console.error("error---", err);
       res.status(500).json({
         error: true,
@@ -577,6 +615,7 @@ const select_provider = async (req, res) => {
     }
   };
 
+//payment 
   const payment = async(req,res)=>{
     const{order_id,payment_reference,amount,successFlag}=req.body
     const date=new Date
@@ -611,7 +650,7 @@ const select_provider = async (req, res) => {
     }
   }
   
-
+// password reseting 
   const change_password =async(req,res)=>{
     const{customer_id,newpasswords} = req.body
     try{
@@ -728,11 +767,38 @@ const listing_providers =async(req,res)=>{
   
 }
 
+//single customer full  order details
+const single_cus_order = async(req,res)=>{
+  const {customer_id} =req.body
+  try{
+    const order_data = await prisma.order_details.findMany({
+          where:{
+            custmr_id:customer_id
+          }
+    })
+    res.status(200).json({
+      error:false,
+      success:true,
+      message:"complete orders of single customer",
+      data:order_data
+    })
+
+  }catch(err){
+    console.err("error---",err)
+    res.status(400).json({
+      error:true,
+      success:false,
+      message:"internal server error"
+    })
+  }
+
+}
 
 
 
 
 
-module.exports={registration,logindata,customer_addressbook,customer_feedback,product_material,order_list,customerdetails,list_providers,select_provider,payment,change_password,complete_order_detail,selected_provider_data,listing_providers}
+module.exports={registration,logindata,customer_addressbook,customer_feedback,product_material,order_list,customerdetails,list_providers,select_provider,payment,change_password,complete_order_detail,selected_provider_data,listing_providers,single_cus_order }
+
 
 

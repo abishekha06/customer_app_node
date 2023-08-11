@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer')
 const path = require('path')
 const hbs = require('nodemailer-express-handlebars');
 const { json } = require("body-parser");
+// const { log } = require("console");
 
 
 
@@ -112,9 +113,9 @@ return res.status(200).json({
 }
 
 const provider_login = async (req, res) => {
-    const { email, password, mobile } = req.body;
+    const { userid , password } = req.body;
 
-    if ((!email && !mobile) || !password) {
+    if (!userid || !password) {
         res.status(401).json({
             error: true,
             status: false,
@@ -123,32 +124,29 @@ const provider_login = async (req, res) => {
     } else {
         try {
             let user;
+            let identifier;
 
-            if (email !== null && mobile !== null) {
-               
-                user = await prisma.provider_details.findFirst({
-                    where: {
-                        email: email,
-                        mobile: mobile
-                    },
-                });
-            } else if (email !== null) {
-              
-                user = await prisma.provider_details.findFirst({
-                    where: {
-                        email: email
-                    },
-                });
-            } else {
-              
-                user = await prisma.provider_details.findFirst({
-                    where: {
-                        mobile: mobile
-                    },
-                });
+            const emailFormat = /^[^\s@]+@gmail\.com$/.test(userid);
+            if(emailFormat){
+              identifier = "email";
+            }else{
+              identifier = "mobile";
             }
 
-            console.log(user);
+            if(identifier === "email"){
+              user=await prisma.provider_details.findFirst({
+                where:{
+                  email:userid
+                }
+              })
+            }else{
+              user=await prisma.provider_details.findFirst({
+                where:{
+                  mobile:userid
+                }
+              })
+            }
+         console.log(user);
 
             if (!user) {
                 res.status(401).json({
@@ -179,7 +177,8 @@ const provider_login = async (req, res) => {
                             res.status(200).json({
                                 error: false,
                                 status: true,
-                                message: "Successfully logged in"
+                                message: "Successfully logged in",
+                                data:user
                             });
                         }
                     }
@@ -195,6 +194,8 @@ const provider_login = async (req, res) => {
         }
     }
 };
+
+
 //full customer details passing to driver
 const customers_details =async(req,res)=>{
     try{
@@ -237,12 +238,13 @@ const single_order_detail = async(req,res)=>{
 //adding price by driver to the single order detail
 
 const amount_added = async (req, res) => {
-    const { order_id, price, provider_id } = req.body;
+    const { order_id, price, provider_id,status  } = req.body;
     try {
       const single_details = await prisma.order_details.findUnique({
         where: {
           id: order_id,
-        },
+        }
+       
       });
   
       if (!single_details) {
@@ -280,6 +282,16 @@ const amount_added = async (req, res) => {
               price: price,
             },
           });
+          //status updating
+          await prisma.order_details.update({
+            where: {
+                id: order_id,
+            },
+            data: {
+                status: status, // Update the status field
+               
+            },
+        });
   
           res.status(200).json({
             error: false,
@@ -334,19 +346,20 @@ const amount_added = async (req, res) => {
 }   
 
 
-// module.exports = driver_documentation;
+
 
 
 
 const provider_feedback= async(req,res)=>{
-  const provider_id =req.body.provider_id
+  console.log("reqq",req.body);
+  const provider_id =parseInt(req.body.provider_id)
   const param1=req.body.param1
   const param2=req.body.param2
   const param3=req.body.param3
   const param4=req.body.param4
   const remarks=req.body.remarks
   try{
-    const feedback = await prisma.customer_details.findUnique({
+    const feedback = await prisma.provider_details.findUnique({
       where:{
           id:provider_id
       }
@@ -665,6 +678,37 @@ const adding_veh_details = async(req,res)=>{
   }
 }
 
+//status updating
+
+const adding_status = async(req,res)=>{
+  const {order_id, status} = req.body
+  try{
+    const status_update = await prisma.order_details.update({
+      where:{
+        id:order_id
+      },
+      data:{
+        status:status
+      }
+    })
+    res.status(200).json({
+      error:false,
+      success:true,
+      message:"status updated",
+      data:status_update
+    })
+
+  }catch(err){
+    console.err("error---",err)
+    res.status(400).json({
+      error:true,
+      success:false,
+      message:"internal server error"
+    })
+  }
+
+
+}
 
 
 
@@ -676,7 +720,8 @@ const adding_veh_details = async(req,res)=>{
 
 
 
-module.exports= {providerRegistration,provider_login,customers_details,single_order_detail,amount_added,driver_documentation,provider_feedback,changeing_password,complete_trip,vehicle_details,adding_veh_details}
+
+module.exports= {providerRegistration,provider_login,customers_details,single_order_detail,amount_added,driver_documentation,provider_feedback,changeing_password,complete_trip,vehicle_details,adding_veh_details,adding_status}
 
 
 

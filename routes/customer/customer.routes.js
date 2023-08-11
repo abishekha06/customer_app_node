@@ -1,7 +1,7 @@
 const express = require('express')
 const customerRouter =express.Router()
 
-const{registration,customerdetails,logindata,customer_addressbook,customer_feedback,product_material,order_list,list_providers,select_provider,payment,change_password,complete_order_detail,selected_provider_data,listing_providers} = require('./customer.controller')
+const{registration,customerdetails,logindata,customer_addressbook,customer_feedback,product_material,order_list,list_providers,select_provider,payment,change_password,complete_order_detail,selected_provider_data,listing_providers,single_cus_order } = require('./customer.controller')
 
 
 customerRouter.post('/login',logindata)
@@ -19,6 +19,7 @@ customerRouter.post('/complete_order',complete_order_detail)
 customerRouter.get('/selected_provider',selected_provider_data)
 // customerRouter.post('/documents',customer_documentation)
 customerRouter.get('/provider_list',listing_providers)
+customerRouter.post('/customer_order',single_cus_order )
 
 
 

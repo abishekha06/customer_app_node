@@ -63,7 +63,7 @@ model provider_feedback{
   param3   Int?
   param4   Int?
   remarks  String?
-  average  Int? 
+  average  Float? 
 }
 model vehicle_type{
   id  Int @id @default(autoincrement())
@@ -117,7 +117,7 @@ model customer_details{
   cus_id customer_feedback[]
   custm_id address_book[]
   customer_ids order_details[]
-  feedback_average Int?
+  feedback_average Float?
 }
 
 model customer_feedback{
@@ -129,7 +129,7 @@ model customer_feedback{
   param3 Int?
   param4 Int?
   remark String?
-  average Int?
+  average Float?
 
 }
 
