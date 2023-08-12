@@ -465,7 +465,7 @@ const product_material = async (req, res) => {
       res.status(500).json({ error: "An error occurred while fetching materials" });
     }
   };
-// product order
+// ordering the products by customer
   const order_list =async(req,res)=>{
     try{
         const{from,to,products,quoted_price,bandwidth,actual_price,custmr_id,type,status}=req.body;
@@ -614,7 +614,6 @@ const select_provider = async (req, res) => {
       });
     }
   };
-
 //payment 
   const payment = async(req,res)=>{
     const{order_id,payment_reference,amount,successFlag}=req.body
@@ -793,12 +792,37 @@ const single_cus_order = async(req,res)=>{
   }
 
 }
+//displaying adress of a single customer
+const single_address =async(req,res)=>{
+  const{customer_id} = req.body
+  try{
+    const address = await prisma.address_book.findMany({
+      where:{
+        custom_id:customer_id
+      }
+    })
+    res.status(200).json({
+      error:false,
+      success:true,
+      message:'complete address of a single customer',
+      data:address
+    })
+
+  }catch(err){
+    console.error("errorr----",err)
+    res.status(400).json({
+      error:true,
+      success:false,
+      message:"internal server error"
+    })
+  }
+
+}
 
 
 
 
-
-module.exports={registration,logindata,customer_addressbook,customer_feedback,product_material,order_list,customerdetails,list_providers,select_provider,payment,change_password,complete_order_detail,selected_provider_data,listing_providers,single_cus_order }
+module.exports={registration,logindata,customer_addressbook,customer_feedback,product_material,order_list,customerdetails,list_providers,select_provider,payment,change_password,complete_order_detail,selected_provider_data,listing_providers,single_cus_order,single_address }
 
 
 

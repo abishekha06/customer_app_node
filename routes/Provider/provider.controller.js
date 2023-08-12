@@ -699,7 +699,7 @@ const adding_status = async(req,res)=>{
     })
 
   }catch(err){
-    console.err("error---",err)
+    console.error("error---",err)
     res.status(400).json({
       error:true,
       success:false,
@@ -707,6 +707,29 @@ const adding_status = async(req,res)=>{
     })
   }
 
+
+}
+//full vehicle list 
+
+const vehicle_list = async(req,res)=>{
+ 
+  try{
+    const full_list = await prisma.vehicle.findMany()
+    res.status(200).json({
+      error:false,
+      success:true,
+      message:"complete vehicle list",
+      data:full_list
+    })
+
+  }catch(err){
+    console.error("errorr---",err)
+    res.status(400).json({
+      error:true,
+      success:false,
+      message:"internal server error"
+    })
+  }
 
 }
 
@@ -721,7 +744,7 @@ const adding_status = async(req,res)=>{
 
 
 
-module.exports= {providerRegistration,provider_login,customers_details,single_order_detail,amount_added,driver_documentation,provider_feedback,changeing_password,complete_trip,vehicle_details,adding_veh_details,adding_status}
+module.exports= {providerRegistration,provider_login,customers_details,single_order_detail,amount_added,driver_documentation,provider_feedback,changeing_password,complete_trip,vehicle_details,adding_veh_details,adding_status,vehicle_list}
 
 
 
